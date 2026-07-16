@@ -1,58 +1,26 @@
+/**
+ * Mapea entidades Prisma a DTOs del contrato API.
+ */
 import type { Gestion, Mensaje, Participante, User } from "@prisma/client";
-import { RolChat } from "@prisma/client";
+import { obtenerContactoConversacion } from "@/lib/chat/acceso";
+import type {
+  ConversacionResumen,
+  GestionDetalle,
+  GestionResumen,
+  MensajeResumen,
+  Usuario,
+} from "@/types/dominio";
 
-export type UsuarioPublico = {
-  id: string;
-  nombre: string;
-  email: string;
-  telefono: string | null;
-  empresa: string | null;
-  fotoUrl: string | null;
-  calificacion: number;
-  gestionesCompletadas: number;
-  gestionesCanceladas: number;
+export type {
+  ConversacionResumen,
+  GestionDetalle,
+  GestionResumen,
+  MensajeResumen,
+  Usuario,
 };
 
-export type GestionResumen = {
-  id: string;
-  titulo: string;
-  descripcion: string;
-  estado: Gestion["estado"];
-  fechaProgramada: string;
-  receptorNombre: string;
-  receptorDireccion: string;
-  emisorNombre: string;
-  progreso: number;
-};
-
-export type GestionDetalle = GestionResumen & {
-  indicaciones: string | null;
-  precauciones: string | null;
-  empresaEnvio: string | null;
-  origenLat: number | null;
-  origenLng: number | null;
-  origenNombre: string | null;
-  destinoLat: number | null;
-  destinoLng: number | null;
-  emisorDireccion: string | null;
-};
-
-export type ConversacionResumen = {
-  id: string;
-  contactoNombre: string;
-  contactoFotoUrl: string | null;
-  ultimoMensaje: string | null;
-  rolContacto: RolChat;
-  actualizadoEn: string;
-};
-
-export type MensajeResumen = {
-  id: string;
-  contenido: string;
-  enviadoEn: string;
-  esMio: boolean;
-  autorNombre: string;
-};
+/** @deprecated Preferir `Usuario` desde `@/types/dominio`. */
+export type UsuarioPublico = Usuario;
 
 export function serializarUsuario(
   user: Pick<
@@ -66,8 +34,11 @@ export function serializarUsuario(
     | "calificacion"
     | "gestionesCompletadas"
     | "gestionesCanceladas"
-  >,
-): UsuarioPublico {
+  > &
+    Partial<
+      Pick<User, "ubicacionLat" | "ubicacionLng" | "ubicacionDireccion">
+    >,
+): Usuario {
   return {
     id: user.id,
     nombre: user.nombre,
@@ -78,6 +49,9 @@ export function serializarUsuario(
     calificacion: user.calificacion,
     gestionesCompletadas: user.gestionesCompletadas,
     gestionesCanceladas: user.gestionesCanceladas,
+    ubicacionLat: user.ubicacionLat ?? null,
+    ubicacionLng: user.ubicacionLng ?? null,
+    ubicacionDireccion: user.ubicacionDireccion ?? null,
   };
 }
 
@@ -119,18 +93,17 @@ export function serializarConversacion(
   },
   userId: string,
 ): ConversacionResumen | null {
-  const contacto = conversacion.participantes.find(
-    (participante) => participante.userId !== userId,
+  const contacto = obtenerContactoConversacion(
+    conversacion.participantes,
+    userId,
   );
   if (!contacto) return null;
-
-  const ultimoMensaje = conversacion.mensajes[0]?.contenido ?? null;
 
   return {
     id: conversacion.id,
     contactoNombre: contacto.nombre,
     contactoFotoUrl: contacto.fotoUrl,
-    ultimoMensaje,
+    ultimoMensaje: conversacion.mensajes[0]?.contenido ?? null,
     rolContacto: contacto.rol,
     actualizadoEn: conversacion.actualizadoEn.toISOString(),
   };
@@ -149,17 +122,4 @@ export function serializarMensaje(
   };
 }
 
-export function filtrarConversacionPorRol(
-  conversacion: {
-    participantes: Participante[];
-  },
-  userId: string,
-  filtro: "managers" | "consumers",
-): boolean {
-  const contacto = conversacion.participantes.find(
-    (participante) => participante.userId !== userId,
-  );
-  if (!contacto) return false;
-  if (filtro === "managers") return contacto.rol === RolChat.MANAGER;
-  return contacto.rol === RolChat.CONSUMER;
-}
+export { filtrarConversacionPorRol } from "@/lib/chat/acceso";

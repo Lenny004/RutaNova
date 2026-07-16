@@ -60,6 +60,9 @@ describe("serializers", () => {
       calificacion: usuarioBase.calificacion,
       gestionesCompletadas: usuarioBase.gestionesCompletadas,
       gestionesCanceladas: usuarioBase.gestionesCanceladas,
+      ubicacionLat: null,
+      ubicacionLng: null,
+      ubicacionDireccion: null,
     });
   });
 
