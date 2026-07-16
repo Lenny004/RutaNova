@@ -5,9 +5,9 @@
 | Agente | Responsabilidad | Paths principales | Estado |
 |--------|-----------------|-------------------|--------|
 | Base de datos | Esquema, migración, seed | `prisma/**` | Completado (orquestador) |
-| Backend | APIs y lógica de dominio | `src/app/api/**`, `src/lib/validations/**` | En paralelo |
-| Frontend | UI y experiencia | `src/app/**` (no api), `src/components/**` | En paralelo |
-| QA / Validación | Tests y evaluaciones | `tests/**`, `docs/evaluacion-*.md` | En paralelo |
+| Backend | APIs y lógica de dominio | `src/app/api/**`, `src/lib/validations/**` | Completado |
+| Frontend | UI y experiencia | `src/app/**` (no api), `src/components/**` | En progreso / commits en `develop` |
+| QA / Validación | Tests y evaluaciones | `src/lib/*.test.ts`, `docs/evaluacion-*.md` | Completado (13 tests OK) |
 
 ## Reglas anti-conflicto
 
