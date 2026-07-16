@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { ExternalLink, QrCode } from "lucide-react";
+import { CheckCircle2, ExternalLink, QrCode } from "lucide-react";
 import { PageHeader } from "@/components/layout/AppShell";
 import { DynamicMap } from "@/components/map/DynamicMap";
 import { Button } from "@/components/ui/Button";
@@ -11,38 +11,41 @@ import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { api, type GestionDetalle } from "@/lib/api-client";
+import { obtenerMensajeError } from "@/lib/errores";
 import { wazeDeepLink } from "@/lib/geo/coordenadas";
 
 export default function EnvioPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: gestionId } = useParams<{ id: string }>();
+  const router = useRouter();
   const [gestion, setGestion] = useState<GestionDetalle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [qrOpen, setQrOpen] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrLoading, setQrLoading] = useState(false);
+  const [completando, setCompletando] = useState(false);
 
   const cargar = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const { gestion: detalle } = await api.gestiones.obtener(id);
+      const { gestion: detalle } = await api.gestiones.obtener(gestionId);
       setGestion(detalle);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar");
+      setError(obtenerMensajeError(err, "Error al cargar el envío"));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [gestionId]);
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, [cargar]);
 
   async function handleMostrarQr() {
     setQrLoading(true);
     try {
-      const { payload } = await api.gestiones.qr(id);
+      const { payload } = await api.gestiones.qr(gestionId);
       const dataUrl = await QRCode.toDataURL(payload, {
         width: 256,
         margin: 2,
@@ -51,9 +54,23 @@ export default function EnvioPage() {
       setQrDataUrl(dataUrl);
       setQrOpen(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al generar QR");
+      setError(obtenerMensajeError(err, "Error al generar QR"));
     } finally {
       setQrLoading(false);
+    }
+  }
+
+  async function completarEntrega() {
+    if (!gestion) return;
+    setCompletando(true);
+    setError("");
+    try {
+      await api.gestiones.completar(gestion.id);
+      router.push("/gestiones");
+    } catch (err) {
+      setError(obtenerMensajeError(err, "No se pudo completar la entrega"));
+    } finally {
+      setCompletando(false);
     }
   }
 
@@ -89,7 +106,7 @@ export default function EnvioPage() {
       <PageHeader
         title="Envío en curso"
         subtitle={gestion.receptorNombre}
-        backHref={`/gestiones/${id}`}
+        backHref={`/gestiones/${gestionId}`}
       />
 
       <div className="space-y-4 px-5 pb-8">
@@ -134,6 +151,17 @@ export default function EnvioPage() {
             <QrCode className="h-4 w-4" />
             Mostrar QR
           </Button>
+
+          {gestion.estado === "EN_CURSO" && (
+            <Button
+              fullWidth
+              loading={completando}
+              onClick={completarEntrega}
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              Confirmar entrega
+            </Button>
+          )}
         </div>
       </div>
 

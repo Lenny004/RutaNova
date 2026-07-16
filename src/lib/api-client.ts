@@ -117,6 +117,12 @@ export const api = {
         { method: "POST" },
       ),
 
+    completar: (id: string) =>
+      solicitarJson<{ gestion: GestionDetalle }>(
+        `/api/gestiones/${id}/completar`,
+        { method: "POST" },
+      ),
+
     qr: (id: string) =>
       solicitarJson<{ codigo: string; payload: string }>(
         `/api/gestiones/${id}/qr`,

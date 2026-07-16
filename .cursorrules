@@ -37,5 +37,8 @@
 ## Git y ramas
 
 - Trabajar únicamente en la rama de desarrollo `develop` (además de `main`).
+- Remoto: `https://github.com/Lenny004/RutaNova.git`
+- Subir cambios frecuentes a `origin/develop` (y sincronizar `main` cuando se pida).
 - No crear ramas adicionales salvo indicación explícita del usuario.
 - Documentación viva en `docs/`; actualizar evaluaciones al cerrar cada fase.
+- Usar `git commit --no-verify` solo si un hook bloquea sin causa; preferir el hook local que elimina trailers de Cursor.

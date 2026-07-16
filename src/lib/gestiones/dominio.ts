@@ -25,6 +25,11 @@ export function puedeIniciarGestion(estado: EstadoGestion): boolean {
   return estado === "PENDIENTE";
 }
 
+/** Solo gestiones en curso pueden marcarse como completadas. */
+export function puedeCompletarGestion(estado: EstadoGestion): boolean {
+  return estado === "EN_CURSO";
+}
+
 /** Gestiones activas (pendiente o en curso) pueden cancelarse. */
 export function puedeCancelarGestion(estado: EstadoGestion): boolean {
   return estado === "PENDIENTE" || estado === "EN_CURSO";

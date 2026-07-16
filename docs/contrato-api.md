@@ -29,6 +29,7 @@ Usuario: `{ id, nombre, email, telefono, empresa, fotoUrl, calificacion, gestion
 | GET | `/api/gestiones/[id]` | `{ gestion: GestionDetalle }` |
 | POST | `/api/gestiones/[id]/iniciar` | `{ gestion }` |
 | POST | `/api/gestiones/[id]/cancelar` | `{ gestion }` |
+| POST | `/api/gestiones/[id]/completar` | `{ gestion }` |
 | GET | `/api/gestiones/[id]/qr` | `{ codigo, payload }` |
 
 `Gestion`: id, titulo, descripcion, estado, fechaProgramada, receptorNombre, receptorDireccion, emisorNombre, progreso (0-100).

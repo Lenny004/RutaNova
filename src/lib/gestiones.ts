@@ -9,6 +9,7 @@ export {
   puedeAbrirEnvioEnCurso,
   puedeCancelar,
   puedeCancelarGestion,
+  puedeCompletarGestion,
   puedeIniciar,
   puedeIniciarGestion,
   progresoAlIniciar,
