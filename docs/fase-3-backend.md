@@ -35,3 +35,4 @@
 - [x] Listado y detalle de gestiones respetan el usuario autenticado.
 - [x] Iniciar gestión cambia estado a `EN_CURSO` y habilita QR.
 - [x] Chat filtra por managers/consumers y permite enviar mensajes.
+- [ ] Tests de integración HTTP automatizados (pendiente QA).

@@ -19,3 +19,4 @@
 - [x] Seed crea al menos 1 repartidor, 3 gestiones y 2 conversaciones.
 - [x] Relaciones User ↔ Gestion / Mensaje son consistentes.
 - [x] Contraseñas en seed están hasheadas.
+- [x] Reglas de dominio de gestiones extraídas y testeables (`src/lib/gestiones-rules.ts`).

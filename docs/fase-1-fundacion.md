@@ -20,3 +20,4 @@
 - [x] Tailwind configurado (tipografías de marca en Fase 4).
 - [x] `.env.example` y README están completos.
 - [x] Estructura de carpetas `src/app`, `src/lib`, `prisma` existe (`src/components` en Fase 4).
+- [x] Vitest configurado (`vitest.config.ts`) con script `npm test`.

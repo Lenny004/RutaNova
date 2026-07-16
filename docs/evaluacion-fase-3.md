@@ -1,37 +1,72 @@
-# Evaluación — Fase 3 Backend
+# Evaluación Fase 3 — Backend (APIs y lógica)
 
 **Fecha:** 2026-07-16  
 **Rama:** `develop`  
-**Fuente:** [Agente Backend](d7418e58-6ea9-45d0-8c88-0277d9d6b64a)
+**Evaluador:** Agente QA/Validación
 
-## Criterios de aceptación
+## Resumen ejecutivo
 
-| Criterio | ¿Cumple? | Evidencia |
-|----------|----------|-----------|
-| Login inválido/válido con token/sesión | Sí | `POST /api/auth/login` + cookie JWT |
-| Recuperación y restablecimiento | Sí | `recuperar` + `restablecer` con token 24h |
-| Gestiones solo del usuario autenticado | Sí | Filtro por `repartidorId` |
-| Iniciar → `EN_CURSO` + QR | Sí | `iniciar` + `qr` |
-| Chat con filtros y envío | Sí | `filtro=managers\|consumers` + POST mensajes |
+El backend está **mayormente completo**. Todas las rutas del contrato API existen bajo `src/app/api/`, con autenticación JWT, validación Zod y respuestas HTTP consistentes. Faltan tests de integración y adopción de `gestiones-rules` en los handlers.
+
+## Inventario de endpoints
+
+| Ruta | Estado | Archivo |
+|------|--------|---------|
+| `POST /api/auth/login` | ✅ | `auth/login/route.ts` |
+| `POST /api/auth/recuperar` | ✅ | `auth/recuperar/route.ts` |
+| `POST /api/auth/restablecer` | ✅ | `auth/restablecer/route.ts` |
+| `GET /api/auth/me` | ✅ | `auth/me/route.ts` |
+| `POST /api/auth/logout` | ✅ | `auth/logout/route.ts` |
+| `GET /api/perfil` | ✅ | `perfil/route.ts` |
+| `PATCH /api/perfil` | ✅ | `perfil/route.ts` |
+| `GET /api/gestiones` | ✅ | `gestiones/route.ts` |
+| `GET /api/gestiones/[id]` | ✅ | `gestiones/[id]/route.ts` |
+| `POST /api/gestiones/[id]/iniciar` | ✅ | `gestiones/[id]/iniciar/route.ts` |
+| `POST /api/gestiones/[id]/cancelar` | ✅ | `gestiones/[id]/cancelar/route.ts` |
+| `GET /api/gestiones/[id]/qr` | ✅ | `gestiones/[id]/qr/route.ts` |
+| `GET /api/chat/conversaciones` | ✅ | `chat/conversaciones/route.ts` |
+| `GET/POST .../mensajes` | ✅ | `chat/conversaciones/[id]/mensajes/route.ts` |
+
+## Criterios de aceptación (fase-3-backend.md)
+
+| Criterio | Estado | Observaciones |
+|----------|--------|---------------|
+| Login inválido → error; válido → token/sesión | ✅ Parcial verificado | Código correcto; falta test HTTP automatizado |
+| Recuperación y restablecimiento | ✅ Implementado | Token en dev expuesto en respuesta; validación 422 si misma contraseña |
+| Gestiones respetan usuario autenticado | ✅ | `obtenerGestionDeRepartidor` filtra por `repartidorId` |
+| Iniciar → `EN_CURSO` + QR habilitado | ✅ | Progreso mínimo 40; QR requiere gestión en curso |
+| Chat filtra y envía mensajes | ✅ | Filtro `managers`/`consumers` vía `filtrarConversacionPorRol` |
 
 ## Calidad de código
 
-- Validación Zod centralizada en `src/lib/validations`.
-- Serializers alineados a `docs/contrato-api.md`.
-- Helpers de dominio en `src/lib/gestiones.ts`.
-- Build de Next.js reportado sin errores por el agente.
+**Fortalezas**
 
-## Integración con fases anteriores
+- Patrón uniforme: `requireUser` → validación Zod → Prisma → serializer → `jsonOk`/`jsonError`.
+- Errores con códigos 401, 404, 400, 422 según contrato.
+- Transacciones en cancelar gestión (incremento de `gestionesCanceladas`).
+- `api-client.ts` tipado para consumo desde frontend.
 
-- Usa Prisma seed (Fase 2) y helpers `auth`/`password`/`http` (Fase 1).
-- Contrato API respetado.
+**Áreas de mejora**
+
+- Handlers de iniciar/cancelar repiten condiciones que ya existen en `gestiones-rules.ts`.
+- Sin rate limiting en auth (recuperar/login).
+- `GET /api/auth/me` duplica parcialmente `GET /api/perfil` (decidir un solo endpoint o documentar diferencia).
+
+## Integración
+
+- Auth: cookie `rutanova_token` + header Bearer.
+- Serializers compartidos entre todas las rutas de gestiones y chat.
+- Validaciones en `src/lib/validations/` coherentes con contrato.
 
 ## Deuda técnica
 
-1. Chat sin WebSocket/SSE (polling o refresh manual en UI).
-2. `resetToken` expuesto fuera de producción (intencional para demo).
-3. Falta suite E2E de APIs (cubre QA unitario parcial).
+| Ítem | Severidad | Notas |
+|------|-----------|-------|
+| Sin tests de integración API | Alta | Solo tests unitarios de lib |
+| Envío de email en recuperación | Media | Token solo en dev; producción necesita servicio SMTP |
+| Completar gestión (COMPLETADA) | Media | No hay endpoint POST completar en contrato actual |
+| Paginación en listados | Baja | Gestiones y mensajes sin límite |
 
 ## Veredicto
 
-**Aprobada.** Lista para integración con Frontend (Fase 4).
+**Fase 3: COMPLETA (~90%)** — APIs listas para integración frontend. Recomendado: tests de integración y refactor a `gestiones-rules` en handlers.
