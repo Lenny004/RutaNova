@@ -3,7 +3,7 @@
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
-import { SAN_SALVADOR_CENTER } from "@/lib/api-client";
+import { SAN_SALVADOR_CENTER } from "@/lib/geo/coordenadas";
 
 const defaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",

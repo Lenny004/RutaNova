@@ -8,60 +8,64 @@ import { EstadoBadge } from "@/components/ui/EstadoBadge";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { ProgresoBar } from "@/components/gestiones/ProgresoBar";
 import { api, type GestionDetalle } from "@/lib/api-client";
+import { obtenerMensajeError } from "@/lib/errores";
 import { formatFecha } from "@/lib/format";
+import { puedeAbrirEnvioEnCurso } from "@/lib/gestiones";
 
 export default function GestionDetallePage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: gestionId } = useParams<{ id: string }>();
   const router = useRouter();
   const [gestion, setGestion] = useState<GestionDetalle | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
+  const [accionEnCurso, setAccionEnCurso] = useState(false);
 
-  const cargar = useCallback(async () => {
-    setLoading(true);
+  const cargarDetalle = useCallback(async () => {
+    setCargando(true);
     setError("");
     try {
-      const { gestion: detalle } = await api.gestiones.obtener(id);
+      const { gestion: detalle } = await api.gestiones.obtener(gestionId);
       setGestion(detalle);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar");
+      setError(obtenerMensajeError(err, "Error al cargar la gestión"));
     } finally {
-      setLoading(false);
+      setCargando(false);
     }
-  }, [id]);
+  }, [gestionId]);
 
   useEffect(() => {
-    cargar();
-  }, [cargar]);
+    void cargarDetalle();
+  }, [cargarDetalle]);
 
-  async function handleIniciar() {
+  async function iniciarGestion() {
     if (!gestion) return;
-    setActionLoading(true);
+    setAccionEnCurso(true);
     try {
-      const { gestion: actualizada } = await api.gestiones.iniciar(gestion.id);
-      setGestion(actualizada);
+      const { gestion: gestionActualizada } = await api.gestiones.iniciar(
+        gestion.id,
+      );
+      setGestion(gestionActualizada);
       router.push(`/gestiones/${gestion.id}/envio`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo iniciar");
+      setError(obtenerMensajeError(err, "No se pudo iniciar la gestión"));
     } finally {
-      setActionLoading(false);
+      setAccionEnCurso(false);
     }
   }
 
-  if (loading) return <LoadingSpinner />;
+  if (cargando) return <LoadingSpinner />;
   if (error && !gestion) {
     return (
       <div className="px-5 pt-6">
-        <ErrorMessage message={error} onRetry={cargar} />
+        <ErrorMessage message={error} onRetry={cargarDetalle} />
       </div>
     );
   }
   if (!gestion) return null;
 
-  const puedeIniciar =
-    gestion.estado === "PENDIENTE" || gestion.estado === "EN_CURSO";
+  const puedeAbrirEnvio = puedeAbrirEnvioEnCurso(gestion.estado);
 
   return (
     <div className="animate-fade-in">
@@ -131,29 +135,25 @@ export default function GestionDetallePage() {
           </div>
         )}
 
-        <div>
-          <div className="flex items-center justify-between text-sm text-text-muted">
-            <span>Progreso</span>
-            <span>{Math.round(gestion.progreso)}%</span>
-          </div>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-accent-amber transition-all"
-              style={{ width: `${gestion.progreso}%` }}
-            />
-          </div>
-        </div>
+        <ProgresoBar progreso={gestion.progreso} />
 
         {error && <ErrorMessage message={error} />}
 
-        {puedeIniciar && (
+        {puedeAbrirEnvio && (
           <div className="flex flex-col gap-2 pt-2">
             {gestion.estado === "EN_CURSO" ? (
-              <Button fullWidth onClick={() => router.push(`/gestiones/${gestion.id}/envio`)}>
+              <Button
+                fullWidth
+                onClick={() => router.push(`/gestiones/${gestion.id}/envio`)}
+              >
                 Continuar envío
               </Button>
             ) : (
-              <Button fullWidth loading={actionLoading} onClick={handleIniciar}>
+              <Button
+                fullWidth
+                loading={accionEnCurso}
+                onClick={iniciarGestion}
+              >
                 Comenzar
               </Button>
             )}

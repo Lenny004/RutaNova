@@ -1,38 +1,35 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { MessageCircle } from "lucide-react";
-import { PageHeader } from "@/components/layout/AppShell";
 import { ConversacionCard } from "@/components/chat/ConversacionCard";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { PageHeader } from "@/components/layout/AppShell";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { api, type Conversacion } from "@/lib/api-client";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useRecursoAsincrono } from "@/hooks/useRecursoAsincrono";
+import { api } from "@/lib/api-client";
+import type { FiltroChat } from "@/types/dominio";
 
-type Filtro = "managers" | "consumers";
+const ETIQUETAS_FILTRO: Record<FiltroChat, string> = {
+  managers: "Managers",
+  consumers: "Consumidores",
+};
 
 export default function ChatsPage() {
-  const [filtro, setFiltro] = useState<Filtro>("managers");
-  const [conversaciones, setConversaciones] = useState<Conversacion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [filtro, setFiltro] = useState<FiltroChat>("managers");
 
-  const cargar = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const { conversaciones: lista } = await api.chat.conversaciones(filtro);
-      setConversaciones(lista);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar");
-    } finally {
-      setLoading(false);
-    }
+  const {
+    datos: conversaciones,
+    cargando,
+    error,
+    recargar,
+  } = useRecursoAsincrono(async () => {
+    const respuesta = await api.chat.conversaciones(filtro);
+    return respuesta.conversaciones;
   }, [filtro]);
 
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
+  const lista = conversaciones ?? [];
 
   return (
     <div>
@@ -40,39 +37,43 @@ export default function ChatsPage() {
 
       <div className="px-5 pb-6">
         <div className="mb-4 flex gap-2 rounded-xl border border-white/10 bg-white/5 p-1">
-          {(["managers", "consumers"] as const).map((opcion) => (
+          {(Object.keys(ETIQUETAS_FILTRO) as FiltroChat[]).map((opcion) => (
             <button
               key={opcion}
               type="button"
               onClick={() => setFiltro(opcion)}
               className={`
                 flex-1 rounded-lg py-2 text-sm font-medium transition-all duration-200
-                ${filtro === opcion
-                  ? "bg-accent-blue text-white shadow-sm"
-                  : "text-text-muted hover:text-text-cream"
+                ${
+                  filtro === opcion
+                    ? "bg-accent-blue text-white shadow-sm"
+                    : "text-text-muted hover:text-text-cream"
                 }
               `}
             >
-              {opcion === "managers" ? "Managers" : "Consumidores"}
+              {ETIQUETAS_FILTRO[opcion]}
             </button>
           ))}
         </div>
 
-        {loading && <LoadingSpinner />}
-        {!loading && error && (
-          <ErrorMessage message={error} onRetry={cargar} />
+        {cargando && <LoadingSpinner />}
+        {!cargando && error && (
+          <ErrorMessage message={error} onRetry={recargar} />
         )}
-        {!loading && !error && conversaciones.length === 0 && (
+        {!cargando && !error && lista.length === 0 && (
           <EmptyState
             icon={<MessageCircle className="h-6 w-6" />}
             title="Sin conversaciones"
-            description={`No hay chats con ${filtro === "managers" ? "managers" : "consumidores"} por ahora.`}
+            description="No hay chats en este filtro por ahora."
           />
         )}
-        {!loading && !error && conversaciones.length > 0 && (
-          <div className="space-y-3">
-            {conversaciones.map((conv) => (
-              <ConversacionCard key={conv.id} conversacion={conv} />
+        {!cargando && !error && lista.length > 0 && (
+          <div className="space-y-2">
+            {lista.map((conversacion) => (
+              <ConversacionCard
+                key={conversacion.id}
+                conversacion={conversacion}
+              />
             ))}
           </div>
         )}

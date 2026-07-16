@@ -1,8 +1,9 @@
 import Link from "next/link";
-import type { Gestion } from "@/lib/api-client";
-import { formatFecha } from "@/lib/format";
-import { EstadoBadge } from "@/components/ui/EstadoBadge";
 import { ChevronRight, MapPin } from "lucide-react";
+import { ProgresoBar } from "@/components/gestiones/ProgresoBar";
+import { EstadoBadge } from "@/components/ui/EstadoBadge";
+import { formatFecha } from "@/lib/format";
+import type { Gestion } from "@/types/dominio";
 
 type GestionCardProps = {
   gestion: Gestion;
@@ -38,16 +39,7 @@ export function GestionCard({ gestion }: GestionCardProps) {
       </div>
 
       <div className="mt-3">
-        <div className="flex items-center justify-between text-xs text-text-muted">
-          <span>Progreso</span>
-          <span>{Math.round(gestion.progreso)}%</span>
-        </div>
-        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full rounded-full bg-accent-amber transition-all duration-500"
-            style={{ width: `${gestion.progreso}%` }}
-          />
-        </div>
+        <ProgresoBar progreso={gestion.progreso} />
       </div>
     </Link>
   );

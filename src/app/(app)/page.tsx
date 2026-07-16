@@ -6,23 +6,26 @@ import { Package, MessageCircle, MapPin, Navigation } from "lucide-react";
 import { useAuth } from "@/components/layout/AuthProvider";
 import { DynamicMap } from "@/components/map/DynamicMap";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { api, type Gestion, SAN_SALVADOR_CENTER } from "@/lib/api-client";
+import { api } from "@/lib/api-client";
+import { SAN_SALVADOR_CENTER } from "@/lib/geo/coordenadas";
+import { puedeAbrirEnvioEnCurso } from "@/lib/gestiones";
+import type { Gestion } from "@/types/dominio";
 
 export default function HomePage() {
   const { user } = useAuth();
   const [gestiones, setGestiones] = useState<Gestion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     api.gestiones
       .listar()
       .then(({ gestiones: lista }) => setGestiones(lista))
       .catch(() => setGestiones([]))
-      .finally(() => setLoading(false));
+      .finally(() => setCargando(false));
   }, []);
 
-  const activas = gestiones.filter(
-    (g) => g.estado === "PENDIENTE" || g.estado === "EN_CURSO",
+  const gestionesActivas = gestiones.filter((gestion) =>
+    puedeAbrirEnvioEnCurso(gestion.estado),
   ).length;
 
   const ubicacion = {
@@ -42,8 +45,8 @@ export default function HomePage() {
           {user.nombre.split(" ")[0]}
         </h1>
         <p className="mt-1 text-sm text-text-muted">
-          {activas > 0
-            ? `Tienes ${activas} gestión${activas > 1 ? "es" : ""} activa${activas > 1 ? "s" : ""}`
+          {gestionesActivas > 0
+            ? `Tienes ${gestionesActivas} gestión${gestionesActivas > 1 ? "es" : ""} activa${gestionesActivas > 1 ? "s" : ""}`
             : "Sin gestiones activas por ahora"}
         </p>
       </header>
@@ -82,7 +85,7 @@ export default function HomePage() {
           <div>
             <h2 className="font-semibold text-text-cream">Gestiones</h2>
             <p className="text-xs text-text-muted">
-              {loading ? "…" : `${gestiones.length} en total`}
+              {cargando ? "…" : `${gestiones.length} en total`}
             </p>
           </div>
         </Link>
@@ -113,9 +116,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {loading ? (
+      {cargando ? (
         <LoadingSpinner />
-      ) : activas > 0 ? (
+      ) : gestionesActivas > 0 ? (
         <section className="px-5 pb-6">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-muted">
             Próximas gestiones

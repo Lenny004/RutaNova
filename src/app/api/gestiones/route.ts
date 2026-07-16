@@ -1,13 +1,9 @@
-import { NextRequest } from "next/server";
-import { requireUser } from "@/lib/auth";
-import { jsonError, jsonOk } from "@/lib/http";
+import { withAuth } from "@/lib/api/with-auth";
+import { jsonOk } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 import { serializarGestion } from "@/lib/serializers";
 
-export async function GET(request: NextRequest) {
-  const { user, error } = await requireUser(request);
-  if (!user) return jsonError(error ?? "No autenticado", 401);
-
+export const GET = withAuth(async (_request, user) => {
   const gestiones = await prisma.gestion.findMany({
     where: { repartidorId: user.id },
     orderBy: { fechaProgramada: "asc" },
@@ -16,4 +12,4 @@ export async function GET(request: NextRequest) {
   return jsonOk({
     gestiones: gestiones.map(serializarGestion),
   });
-}
+});

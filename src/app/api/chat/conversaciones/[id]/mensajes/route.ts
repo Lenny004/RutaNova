@@ -1,58 +1,46 @@
-import { NextRequest } from "next/server";
-import { requireUser } from "@/lib/auth";
+import { withAuthId } from "@/lib/api/with-auth";
 import { jsonError, jsonOk } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 import { serializarMensaje } from "@/lib/serializers";
 import { crearMensajeSchema } from "@/lib/validations/chat";
 import { parseBody } from "@/lib/validations/common";
 
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
-
-async function verificarParticipacion(conversacionId: string, userId: string) {
+async function obtenerParticipacion(
+  conversacionId: string,
+  userId: string,
+) {
   return prisma.participante.findFirst({
     where: { conversacionId, userId },
   });
 }
 
-export async function GET(request: NextRequest, context: RouteContext) {
-  const { user, error } = await requireUser(request);
-  if (!user) return jsonError(error ?? "No autenticado", 401);
-
-  const { id } = await context.params;
-  const participacion = await verificarParticipacion(id, user.id);
-
+export const GET = withAuthId(async (_request, user, conversacionId) => {
+  const participacion = await obtenerParticipacion(conversacionId, user.id);
   if (!participacion) return jsonError("Conversación no encontrada", 404);
 
   const mensajes = await prisma.mensaje.findMany({
-    where: { conversacionId: id },
+    where: { conversacionId },
     orderBy: { enviadoEn: "asc" },
   });
 
   return jsonOk({
     mensajes: mensajes.map((mensaje) => serializarMensaje(mensaje, user.id)),
   });
-}
+});
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const { user, error } = await requireUser(request);
-  if (!user) return jsonError(error ?? "No autenticado", 401);
-
-  const { id } = await context.params;
-  const participacion = await verificarParticipacion(id, user.id);
-
+export const POST = withAuthId(async (request, user, conversacionId) => {
+  const participacion = await obtenerParticipacion(conversacionId, user.id);
   if (!participacion) return jsonError("Conversación no encontrada", 404);
 
-  const parsed = await parseBody(request, crearMensajeSchema);
-  if (parsed.error) return parsed.error;
+  const parseado = await parseBody(request, crearMensajeSchema);
+  if (parseado.error) return parseado.error;
 
-  const { contenido } = parsed.data;
+  const { contenido } = parseado.data;
 
-  const mensaje = await prisma.$transaction(async (tx) => {
-    const creado = await tx.mensaje.create({
+  const mensajeCreado = await prisma.$transaction(async (tx) => {
+    const mensaje = await tx.mensaje.create({
       data: {
-        conversacionId: id,
+        conversacionId,
         autorId: user.id,
         autorNombre: user.nombre,
         contenido,
@@ -60,12 +48,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
 
     await tx.conversacion.update({
-      where: { id },
+      where: { id: conversacionId },
       data: { actualizadoEn: new Date() },
     });
 
-    return creado;
+    return mensaje;
   });
 
-  return jsonOk({ mensaje: serializarMensaje(mensaje, user.id) });
-}
+  return jsonOk({ mensaje: serializarMensaje(mensajeCreado, user.id) });
+});

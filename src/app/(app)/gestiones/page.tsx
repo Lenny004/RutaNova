@@ -1,35 +1,26 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import { Package } from "lucide-react";
 import { PageHeader } from "@/components/layout/AppShell";
 import { GestionCard } from "@/components/gestiones/GestionCard";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { api, type Gestion } from "@/lib/api-client";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useRecursoAsincrono } from "@/hooks/useRecursoAsincrono";
+import { api } from "@/lib/api-client";
 
 export default function GestionesPage() {
-  const [gestiones, setGestiones] = useState<Gestion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const cargar = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const { gestiones: lista } = await api.gestiones.listar();
-      setGestiones(lista);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar");
-    } finally {
-      setLoading(false);
-    }
+  const {
+    datos: gestiones,
+    cargando,
+    error,
+    recargar,
+  } = useRecursoAsincrono(async () => {
+    const respuesta = await api.gestiones.listar();
+    return respuesta.gestiones;
   }, []);
 
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
+  const lista = gestiones ?? [];
 
   return (
     <div>
@@ -39,20 +30,20 @@ export default function GestionesPage() {
       />
 
       <div className="px-5 pb-6">
-        {loading && <LoadingSpinner />}
-        {!loading && error && (
-          <ErrorMessage message={error} onRetry={cargar} />
+        {cargando && <LoadingSpinner />}
+        {!cargando && error && (
+          <ErrorMessage message={error} onRetry={recargar} />
         )}
-        {!loading && !error && gestiones.length === 0 && (
+        {!cargando && !error && lista.length === 0 && (
           <EmptyState
             icon={<Package className="h-6 w-6" />}
             title="Sin gestiones"
             description="Cuando te asignen entregas, aparecerán aquí."
           />
         )}
-        {!loading && !error && gestiones.length > 0 && (
+        {!cargando && !error && lista.length > 0 && (
           <div className="space-y-3">
-            {gestiones.map((gestion) => (
+            {lista.map((gestion) => (
               <GestionCard key={gestion.id} gestion={gestion} />
             ))}
           </div>

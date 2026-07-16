@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { api, type GestionDetalle, wazeDeepLink } from "@/lib/api-client";
+import { api, type GestionDetalle } from "@/lib/api-client";
+import { wazeDeepLink } from "@/lib/geo/coordenadas";
 
 export default function EnvioPage() {
   const { id } = useParams<{ id: string }>();

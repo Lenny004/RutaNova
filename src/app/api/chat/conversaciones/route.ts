@@ -1,22 +1,19 @@
-import { NextRequest } from "next/server";
-import { requireUser } from "@/lib/auth";
-import { jsonError, jsonOk } from "@/lib/http";
+import { withAuth } from "@/lib/api/with-auth";
+import { filtrarConversacionPorRol } from "@/lib/chat/acceso";
+import { jsonOk } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
-import {
-  filtrarConversacionPorRol,
-  serializarConversacion,
-} from "@/lib/serializers";
+import { serializarConversacion } from "@/lib/serializers";
 import { conversacionesQuerySchema } from "@/lib/validations/chat";
 import { parseQuery } from "@/lib/validations/common";
 
-export async function GET(request: NextRequest) {
-  const { user, error } = await requireUser(request);
-  if (!user) return jsonError(error ?? "No autenticado", 401);
+export const GET = withAuth(async (request, user) => {
+  const parseado = parseQuery(
+    request.nextUrl.searchParams,
+    conversacionesQuerySchema,
+  );
+  if (parseado.error) return parseado.error;
 
-  const parsed = parseQuery(request.nextUrl.searchParams, conversacionesQuerySchema);
-  if (parsed.error) return parsed.error;
-
-  const { filtro } = parsed.data;
+  const { filtro } = parseado.data;
 
   const conversaciones = await prisma.conversacion.findMany({
     where: {
@@ -34,14 +31,15 @@ export async function GET(request: NextRequest) {
     orderBy: { actualizadoEn: "desc" },
   });
 
-  const filtradas = conversaciones
+  const conversacionesFiltradas = conversaciones
     .filter((conversacion) =>
       filtrarConversacionPorRol(conversacion, user.id, filtro),
     )
     .map((conversacion) => serializarConversacion(conversacion, user.id))
-    .filter((conversacion): conversacion is NonNullable<typeof conversacion> =>
-      conversacion !== null,
+    .filter(
+      (conversacion): conversacion is NonNullable<typeof conversacion> =>
+        conversacion !== null,
     );
 
-  return jsonOk({ conversaciones: filtradas });
-}
+  return jsonOk({ conversaciones: conversacionesFiltradas });
+});
