@@ -16,7 +16,7 @@
 
 ## Criterios de aceptación
 
-- [ ] `npm install` y `npm run dev` levantan la app sin errores.
-- [ ] Tailwind y tipografías cargan correctamente.
-- [ ] `.env.example` y README están completos.
-- [ ] Estructura de carpetas `src/app`, `src/components`, `src/lib`, `prisma` existe.
+- [x] `npm install` y `npm run dev` levantan la app sin errores.
+- [x] Tailwind configurado (tipografías de marca en Fase 4).
+- [x] `.env.example` y README están completos.
+- [x] Estructura de carpetas `src/app`, `src/lib`, `prisma` existe (`src/components` en Fase 4).
