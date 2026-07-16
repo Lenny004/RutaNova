@@ -1,10 +1,11 @@
 import { EstadoGestion } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth";
+import { obtenerGestionDeRepartidor } from "@/lib/gestiones";
 import {
-  obtenerGestionDeRepartidor,
-  PROGRESO_MINIMO_INICIO,
-} from "@/lib/gestiones";
+  puedeIniciar,
+  progresoAlIniciar,
+} from "@/lib/gestiones-rules";
 import { jsonError, jsonOk } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 import { serializarGestionDetalle } from "@/lib/serializers";
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (!gestion) return jsonError("Gestión no encontrada", 404);
 
-  if (gestion.estado !== EstadoGestion.PENDIENTE) {
+  if (!puedeIniciar(gestion.estado)) {
     return jsonError("Solo se pueden iniciar gestiones pendientes", 400);
   }
 
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     where: { id: gestion.id },
     data: {
       estado: EstadoGestion.EN_CURSO,
-      progreso: Math.max(gestion.progreso, PROGRESO_MINIMO_INICIO),
+      progreso: progresoAlIniciar(gestion.progreso),
     },
   });
 

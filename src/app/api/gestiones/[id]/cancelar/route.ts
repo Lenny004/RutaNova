@@ -5,6 +5,7 @@ import {
   debeIncrementarCancelaciones,
   obtenerGestionDeRepartidor,
 } from "@/lib/gestiones";
+import { puedeCancelar } from "@/lib/gestiones-rules";
 import { jsonError, jsonOk } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 import { serializarGestionDetalle } from "@/lib/serializers";
@@ -22,10 +23,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (!gestion) return jsonError("Gestión no encontrada", 404);
 
-  if (
-    gestion.estado !== EstadoGestion.PENDIENTE &&
-    gestion.estado !== EstadoGestion.EN_CURSO
-  ) {
+  if (!puedeCancelar(gestion.estado)) {
     return jsonError("La gestión no puede cancelarse en su estado actual", 400);
   }
 
