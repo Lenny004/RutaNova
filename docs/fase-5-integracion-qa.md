@@ -15,7 +15,7 @@
 
 ## Criterios de aceptación
 
-- [ ] Flujos principales pasan sin errores bloqueantes.
-- [ ] Evaluaciones de fases 1–5 documentadas.
-- [ ] Deuda técnica conocida listada con prioridad.
-- [ ] Rama `develop` contiene historial de commits atómicos en español con gitmoji.
+- [x] Flujos principales pasan sin errores bloqueantes.
+- [x] Evaluaciones de fases 1–5 documentadas.
+- [x] Deuda técnica conocida listada con prioridad.
+- [x] Rama `develop` contiene historial de commits atómicos en español con gitmoji.

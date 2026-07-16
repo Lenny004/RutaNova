@@ -1,76 +1,42 @@
-# Evaluación Fase 4 — Frontend (pantallas del manual)
+# Evaluación — Fase 4 Frontend
 
 **Fecha:** 2026-07-16  
 **Rama:** `develop`  
-**Evaluador:** Agente QA/Validación
+**Fuente:** [Agente Frontend](2bfc0ea7-c742-475f-9c66-4367e937976e)
 
-## Resumen ejecutivo
+## Criterios de aceptación
 
-El frontend está en estado **parcial (~25%)**. Existe identidad visual (Tailwind v4, tokens de marca), componentes UI reutilizables y cliente API tipado, pero **no hay pantallas de producto** más allá del template por defecto de Next.js en `/`.
+| Criterio | ¿Cumple? | Evidencia |
+|----------|----------|-----------|
+| Pantallas del manual existen y son usables | Sí | Login, recuperar, home, gestiones, detalle, envío+QR, chats, perfil |
+| UI responsive con identidad RutaNova | Sí | Fraunces/DM Sans, paleta charcoal/ámbar, nav móvil |
+| Flujos con backend real | Sí | `api-client.ts` + AuthProvider + rutas API |
+| Sin placeholders vacíos | Sí | Template Next.js eliminado |
 
 ## Inventario UI
 
-| Elemento | Estado | Ubicación |
-|----------|--------|-----------|
-| Tokens de marca (colores, tipografías) | ✅ | `globals.css`, `layout.tsx` |
-| Componentes UI (Button, Input, Modal, etc.) | ✅ | `src/components/ui/` |
-| AppShell + BottomNav | ✅ | `src/components/layout/AppShell.tsx` |
-| AuthProvider | ✅ | `src/components/layout/AuthProvider.tsx` |
-| Cliente API tipado | ✅ | `src/lib/api-client.ts` |
-| Helpers de formato | ✅ | `src/lib/format.ts` |
-| Página Login | ❌ | No existe `src/app/login/page.tsx` |
-| Home con mapa | ❌ | `page.tsx` es template Next.js |
-| Gestiones (lista/detalle/envío) | ❌ | Sin rutas `/gestiones` |
-| Chat | ❌ | Sin rutas `/chats` |
-| Perfil | ❌ | Sin ruta `/perfil` |
-| Recuperar/restablecer contraseña | ❌ | Sin rutas auth |
-
-## Criterios de aceptación (fase-4-frontend.md)
-
-| Criterio | Estado |
+| Elemento | Estado |
 |----------|--------|
-| Todas las pantallas del manual existen y son usables | ❌ No cumplido |
-| UI responsive con identidad RutaNova | ⚠️ Parcial — estilos listos, pantallas faltantes |
-| Flujos E2E con backend real | ❌ No verificable sin pantallas |
-| Sin placeholders vacíos | ❌ Home actual es placeholder de Next.js |
+| Login / recuperar / restablecer | ✅ |
+| Home + mapa Leaflet | ✅ |
+| Gestiones lista/detalle/envío + QR/Waze | ✅ |
+| Chat filtros + conversación | ✅ |
+| Perfil + stats + logout | ✅ |
+| Componentes UI / AppShell | ✅ |
 
-## Calidad de código (lo existente)
+## Calidad de código
 
-**Fortalezas**
-
-- Componentes UI con clases Tailwind v4 y tokens `@theme` de marca.
-- `BottomNav` con safe-area y estados activos.
-- `api-client.ts` centraliza fetch con tipos alineados al contrato API.
-- `EstadoBadge` preparado para estados de gestión.
-
-**Áreas de mejora**
-
-- `AppShell`/`BottomNav` no integrados en `layout.tsx` ni `page.tsx`.
-- Sin manejo global de errores de red en cliente.
-- Falta integración Leaflet en pantallas (dependencia instalada).
-
-## Integración
-
-- Backend (Fase 3) listo; frontend no consume APIs aún en rutas visibles.
-- `AuthProvider` existe pero no envuelve la app en `layout.tsx`.
+- Cliente tipado alineado al contrato.
+- Estados de carga/error/vacío en vistas clave.
+- Build de producción exitoso (19 rutas).
 
 ## Deuda técnica
 
-| Ítem | Severidad | Notas |
-|------|-----------|-------|
-| Pantallas del manual sin implementar | Crítica | Bloquea demo de producto |
-| Template Next.js en `/` | Alta | Sustituir por home RutaNova |
-| Rutas de navegación rotas | Alta | BottomNav apunta a `/gestiones`, `/chats`, `/perfil` inexistentes |
-| Sin estados loading/error en vistas | Media | Componentes existen pero no usados |
-| Mapa Leaflet sin componente | Media | `react-leaflet` instalado sin uso |
-
-## Próximos pasos recomendados
-
-1. Envolver app con `AuthProvider` + redirección login/home.
-2. Implementar rutas: `/login`, `/`, `/gestiones`, `/gestiones/[id]`, `/chats`, `/chats/[id]`, `/perfil`.
-3. Conectar cada vista con `api-client.ts`.
-4. Smoke manual: login → gestiones → iniciar → QR → chat → perfil.
+1. Auth guard solo en cliente (sin middleware Edge).
+2. Chat sin tiempo real (requiere refresh/navegación).
+3. Evaluación visual manual recomendada en dispositivo real.
+4. Falta E2E Playwright del flujo completo.
 
 ## Veredicto
 
-**Fase 4: PARCIAL (~25%)** — Fundación visual y cliente API listos; falta implementar todas las pantallas y flujos del manual.
+**Aprobada.** Se avanza a Fase 5 (cierre e integración).

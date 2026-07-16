@@ -6,7 +6,7 @@
 |--------|-----------------|-------------------|--------|
 | Base de datos | Esquema, migración, seed | `prisma/**` | Completado (orquestador) |
 | Backend | APIs y lógica de dominio | `src/app/api/**`, `src/lib/validations/**` | Completado |
-| Frontend | UI y experiencia | `src/app/**` (no api), `src/components/**` | En progreso / commits en `develop` |
+| Frontend | UI y experiencia | `src/app/**` (no api), `src/components/**` | Completado |
 | QA / Validación | Tests y evaluaciones | `src/lib/*.test.ts`, `docs/evaluacion-*.md` | Completado (13 tests OK) |
 
 ## Reglas anti-conflicto

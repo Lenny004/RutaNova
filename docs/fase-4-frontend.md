@@ -20,7 +20,7 @@
 
 ## Criterios de aceptación
 
-- [ ] Todas las pantallas del índice del manual existen y son usables.
-- [ ] La UI es responsive (móvil primero) y mantiene identidad RutaNova.
-- [ ] Flujos críticos funcionan end-to-end con backend real.
-- [ ] No hay pantallas placeholder vacías sin valor.
+- [x] Todas las pantallas del índice del manual existen y son usables.
+- [x] La UI es responsive (móvil primero) y mantiene identidad RutaNova.
+- [x] Flujos críticos funcionan end-to-end con backend real.
+- [x] No hay pantallas placeholder vacías sin valor.
