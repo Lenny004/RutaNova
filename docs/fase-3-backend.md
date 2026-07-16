@@ -30,8 +30,8 @@
 
 ## Criterios de aceptación
 
-- [ ] Login inválido responde error claro; login válido entrega token/sesión.
-- [ ] Recuperación genera token; restablecimiento actualiza contraseña.
-- [ ] Listado y detalle de gestiones respetan el usuario autenticado.
-- [ ] Iniciar gestión cambia estado a `EN_CURSO` y habilita QR.
-- [ ] Chat filtra por managers/consumers y permite enviar mensajes.
+- [x] Login inválido responde error claro; login válido entrega token/sesión.
+- [x] Recuperación genera token; restablecimiento actualiza contraseña.
+- [x] Listado y detalle de gestiones respetan el usuario autenticado.
+- [x] Iniciar gestión cambia estado a `EN_CURSO` y habilita QR.
+- [x] Chat filtra por managers/consumers y permite enviar mensajes.
