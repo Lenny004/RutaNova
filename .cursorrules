@@ -1,0 +1,41 @@
+# Reglas del proyecto RutaNova
+
+## Commits y colaboración
+
+- **NO** agregar referencias a Cursor (ni “Cursor”, “Cursor Agent”, co-authored-by de Cursor, etc.) como colaborador en commits.
+- Los mensajes de commit van **siempre en español** y usan **gitmoji** al inicio.
+- Cada commit debe ser atómico: un cambio específico y bien definido.
+- Ejemplos válidos:
+  - `✨ Añadir endpoint de login con JWT`
+  - `🐛 Corregir validación de contraseñas en restablecimiento`
+  - `🎨 Mejorar layout del home con mapa`
+
+## Nomenclatura
+
+- Usar nomenclatura **estable y consistente** en todo el proyecto.
+- Archivos y carpetas: `kebab-case` para rutas/estilos; componentes React en `PascalCase`.
+- Variables, funciones y props: `camelCase` claro y descriptivo.
+- Constantes de dominio: `UPPER_SNAKE_CASE` solo cuando sean verdaderas constantes.
+- Modelos Prisma y tablas: nombres en singular/plural coherentes (`User`, `Gestion`, `Mensaje`).
+- Rutas API en español del dominio del producto: `/api/gestiones`, `/api/chat`, `/api/perfil`.
+
+## Calidad de código
+
+- Priorizar **legibilidad** sobre cleverness.
+- Nombres de variables claros y descriptivos (evitar `data`, `tmp`, `x` salvo índices triviales).
+- Funciones pequeñas, con una responsabilidad.
+- Tipar con TypeScript; evitar `any` salvo justificación local.
+- No dejar código muerto, comentarios obsoletos ni TODOs sin contexto.
+- Preferir composición de componentes y utilidades reutilizables en `src/lib`.
+
+## Producto y UI
+
+- Mantener la identidad visual de **RutaNova** (marca primero, UI profesional).
+- Cada pantalla debe mapear a un flujo del manual (auth, home, gestiones, detalle, envío, chat, perfil).
+- No entregar interfaces genéricas o vacías: cada componente debe tener propósito.
+
+## Git y ramas
+
+- Trabajar únicamente en la rama de desarrollo `develop` (además de `main`).
+- No crear ramas adicionales salvo indicación explícita del usuario.
+- Documentación viva en `docs/`; actualizar evaluaciones al cerrar cada fase.
