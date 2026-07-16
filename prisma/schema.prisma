@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum EstadoGestion {
+  PENDIENTE
+  EN_CURSO
+  COMPLETADA
+  CANCELADA
+}
+
+enum RolChat {
+  MANAGER
+  CONSUMER
+  REPARTIDOR
+}
+
+model User {
+  id                    String    @id @default(cuid())
+  nombre                String
+  email                 String    @unique
+  passwordHash          String
+  telefono              String?
+  empresa               String?
+  fotoUrl               String?
+  calificacion          Float     @default(0)
+  gestionesCompletadas  Int       @default(0)
+  gestionesCanceladas   Int       @default(0)
+  ubicacionLat          Float?
+  ubicacionLng          Float?
+  ubicacionDireccion    String?
+  creadoEn              DateTime  @default(now())
+  actualizadoEn         DateTime  @updatedAt
+  gestiones             Gestion[]
+  participantes         Participante[]
+  mensajes              Mensaje[]
+  resetTokens           PasswordResetToken[]
+}
+
+model Gestion {
+  id                 String        @id @default(cuid())
+  repartidorId       String
+  titulo             String
+  descripcion        String
+  estado             EstadoGestion @default(PENDIENTE)
+  progreso           Int           @default(0)
+  fechaProgramada    DateTime
+  emisorNombre       String
+  emisorDireccion    String?
+  receptorNombre     String
+  receptorDireccion  String
+  indicaciones       String?
+  precauciones       String?
+  empresaEnvio       String?
+  origenNombre       String?
+  origenLat          Float?
+  origenLng          Float?
+  destinoLat         Float?
+  destinoLng         Float?
+  codigoQr           String?
+  creadoEn           DateTime      @default(now())
+  actualizadoEn      DateTime      @updatedAt
+  repartidor         User          @relation(fields: [repartidorId], references: [id])
+}
+
+model Conversacion {
+  id            String         @id @default(cuid())
+  titulo        String?
+  creadoEn      DateTime       @default(now())
+  actualizadoEn DateTime       @updatedAt
+  participantes Participante[]
+  mensajes      Mensaje[]
+}
+
+model Participante {
+  id             String       @id @default(cuid())
+  conversacionId String
+  userId         String?
+  nombre         String
+  fotoUrl        String?
+  rol            RolChat
+  conversacion   Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id])
+
+  @@unique([conversacionId, nombre, rol])
+}
+
+model Mensaje {
+  id             String       @id @default(cuid())
+  conversacionId String
+  autorId        String?
+  autorNombre    String
+  contenido      String
+  enviadoEn      DateTime     @default(now())
+  conversacion   Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
+  autor          User?        @relation(fields: [autorId], references: [id])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  creadoEn  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
